@@ -8,12 +8,23 @@
 
 import Foundation
 
+/// API error response structure from Anthropic
+struct APIErrorResponse: Codable {
+    let type: String?
+    let error: APIErrorDetail?
+
+    struct APIErrorDetail: Codable {
+        let type: String?
+        let message: String?
+    }
+}
+
 enum APIError: Error, LocalizedError {
     case invalidURL
     case noData
     case decodingError
-    case serverError(statusCode: Int)
-    case unauthorized // 401
+    case serverError(statusCode: Int, message: String?)
+    case unauthorized(message: String?) // 401
     case rateLimited  // 429
     case networkError(Error)
     case maxRetriesExceeded(lastError: Error?)
@@ -27,9 +38,15 @@ enum APIError: Error, LocalizedError {
             return "No data received"
         case .decodingError:
             return "Failed to decode response"
-        case .serverError(let code):
+        case .serverError(let code, let message):
+            if let msg = message {
+                return "Server error \(code): \(msg)"
+            }
             return "Server error: \(code)"
-        case .unauthorized:
+        case .unauthorized(let message):
+            if let msg = message {
+                return "Unauthorized: \(msg)"
+            }
             return "Unauthorized - check credentials"
         case .rateLimited:
             return "Rate limited - please wait"
@@ -118,13 +135,16 @@ class APIService: APIServiceProtocol {
                 throw APIError.decodingError
             }
         case 401:
-            throw APIError.unauthorized
+            let message = parseErrorMessage(from: data)
+            throw APIError.unauthorized(message: message)
         case 429:
             throw APIError.rateLimited
         case 500...599:
-            throw APIError.serverError(statusCode: httpResponse.statusCode)
+            let message = parseErrorMessage(from: data)
+            throw APIError.serverError(statusCode: httpResponse.statusCode, message: message)
         default:
-            throw APIError.serverError(statusCode: httpResponse.statusCode)
+            let message = parseErrorMessage(from: data)
+            throw APIError.serverError(statusCode: httpResponse.statusCode, message: message)
         }
     }
 
@@ -145,7 +165,7 @@ class APIService: APIServiceProtocol {
                     print("APIService: Rate limited, waiting \(delay)s before retry \(attempt + 1)")
                     try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
 
-                case .serverError(let code) where code >= 500:
+                case .serverError(let code, _) where code >= 500:
                     // 5xx: Wait longer before retry
                     let delay = max(retryConfig.delay(for: attempt), Constants.Retry.serverErrorMinDelay)
                     print("APIService: Server error \(code), waiting \(delay)s before retry \(attempt + 1)")
@@ -184,6 +204,16 @@ class APIService: APIServiceProtocol {
         } catch {
             return false
         }
+    }
+
+    // MARK: - Error Parsing
+
+    /// Extract error message from API error response body
+    private func parseErrorMessage(from data: Data) -> String? {
+        guard let errorResponse = try? JSONDecoder().decode(APIErrorResponse.self, from: data) else {
+            return nil
+        }
+        return errorResponse.error?.message
     }
 
     // MARK: - Headers

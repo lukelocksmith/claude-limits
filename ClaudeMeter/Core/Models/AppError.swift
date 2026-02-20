@@ -148,9 +148,12 @@ extension AppError {
             return .noData
         case .decodingError:
             return .decodingFailed("Failed to decode API response")
-        case .serverError(let code):
-            return .serverError(statusCode: code, message: nil)
-        case .unauthorized:
+        case .serverError(let code, let message):
+            return .serverError(statusCode: code, message: message)
+        case .unauthorized(let message):
+            if let msg = message {
+                return .authenticationFailed(msg)
+            }
             return .invalidCredentials
         case .rateLimited:
             return .rateLimited(retryAfter: nil)
