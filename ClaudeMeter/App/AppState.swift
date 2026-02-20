@@ -39,6 +39,7 @@ class AppState: ObservableObject {
     // Managers
     private let usageManager: UsageManager
     let pollingManager: PollingManager
+    private let oauthService = OAuthService()
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -131,6 +132,36 @@ class AppState: ObservableObject {
         } else {
             pollingManager.recordFailure()
         }
+    }
+
+    // MARK: - OAuth Login
+
+    /// Generate PKCE challenge and return the authorization URL to open in browser
+    func startOAuthLogin() -> URL {
+        return oauthService.startLogin()
+    }
+
+    /// Exchange the authorization code for tokens, save credentials, and refresh
+    func completeOAuthLogin(code: String) async throws {
+        let tokenResponse = try await oauthService.exchangeCode(code)
+        let credentials = ClaudeCredentials(
+            accessToken: tokenResponse.accessToken,
+            refreshToken: tokenResponse.refreshToken ?? "",
+            expiresAt: Date().addingTimeInterval(TimeInterval(tokenResponse.expiresIn)),
+            subscriptionType: Constants.Credentials.defaultSubscriptionType
+        )
+        let keychainService = KeychainService()
+        try keychainService.updateCredentials(credentials)
+        await refresh()
+    }
+
+    /// Sign out by removing credentials and resetting state
+    func logout() {
+        let homeDir = FileManager.default.homeDirectoryForCurrentUser
+        let credentialsPath = homeDir.appendingPathComponent(".claude/.credentials.json")
+        try? FileManager.default.removeItem(at: credentialsPath)
+        usageData = nil
+        error = AppError.noCredentials
     }
 
     // MARK: - Notifications

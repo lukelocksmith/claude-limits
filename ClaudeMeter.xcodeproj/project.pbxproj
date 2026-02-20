@@ -25,6 +25,7 @@
 		SVC002 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC009; };
 		SVC003 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC010; };
 		SVC004 /* FileWatcherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC011; };
+		SVC005 /* OAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC048; };
 
 		/* Core Managers */
 		MGR001 /* UsageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC012; };
@@ -41,6 +42,7 @@
 		UIP004 /* ProgressBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC021; };
 		UIP005 /* CountdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC022; };
 		UIP006 /* ExtraUsageCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC047; };
+		UIP007 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC049; };
 
 		/* UI Components */
 		UIC001 /* ColorTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC023; };
@@ -134,6 +136,7 @@
 		SRC009 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		SRC010 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		SRC011 /* FileWatcherService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileWatcherService.swift; sourceTree = "<group>"; };
+		SRC048 /* OAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuthService.swift; sourceTree = "<group>"; };
 
 		/* Core Managers */
 		SRC012 /* UsageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageManager.swift; sourceTree = "<group>"; };
@@ -150,6 +153,7 @@
 		SRC021 /* ProgressBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBarView.swift; sourceTree = "<group>"; };
 		SRC022 /* CountdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownView.swift; sourceTree = "<group>"; };
 		SRC047 /* ExtraUsageCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtraUsageCardView.swift; sourceTree = "<group>"; };
+		SRC049 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 
 		/* UI Components */
 		SRC023 /* ColorTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorTheme.swift; sourceTree = "<group>"; };
@@ -317,6 +321,7 @@
 				SRC009 /* KeychainService.swift */,
 				SRC010 /* NotificationService.swift */,
 				SRC011 /* FileWatcherService.swift */,
+				SRC048 /* OAuthService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -359,6 +364,7 @@
 				SRC020 /* ProgressRingView.swift */,
 				SRC021 /* ProgressBarView.swift */,
 				SRC022 /* CountdownView.swift */,
+				SRC049 /* LoginView.swift */,
 			);
 			path = Popover;
 			sourceTree = "<group>";
@@ -601,6 +607,7 @@
 				SVC002 /* KeychainService.swift in Sources */,
 				SVC003 /* NotificationService.swift in Sources */,
 				SVC004 /* FileWatcherService.swift in Sources */,
+				SVC005 /* OAuthService.swift in Sources */,
 				MGR001 /* UsageManager.swift in Sources */,
 				MGR002 /* PollingManager.swift in Sources */,
 				MGR003 /* CacheManager.swift in Sources */,
@@ -611,6 +618,7 @@
 				UIP004 /* ProgressBarView.swift in Sources */,
 				UIP005 /* CountdownView.swift in Sources */,
 				UIP006 /* ExtraUsageCardView.swift in Sources */,
+				UIP007 /* LoginView.swift in Sources */,
 				UIC001 /* ColorTheme.swift in Sources */,
 				UIC002 /* AnimatedNumber.swift in Sources */,
 				UIC003 /* PulseEffect.swift in Sources */,

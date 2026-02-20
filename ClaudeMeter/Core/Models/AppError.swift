@@ -90,8 +90,10 @@ enum AppError: Error, LocalizedError, Equatable {
 
     var recoverySuggestion: String? {
         switch self {
-        case .noCredentials, .invalidCredentials, .credentialsExpired:
-            return "Run 'claude login' in Terminal to authenticate."
+        case .noCredentials:
+            return "Sign in with your Claude account to get started."
+        case .invalidCredentials, .credentialsExpired:
+            return "Sign in again or run 'claude login' in Terminal."
         case .networkUnavailable:
             return "Check your internet connection and try again."
         case .rateLimited:

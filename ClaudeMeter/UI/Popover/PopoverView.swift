@@ -56,11 +56,19 @@ struct PopoverView: View {
     private var contentView: some View {
         if let data = appState.usageData {
             usageContentView(data: data)
+        } else if isNoCredentialsError(appState.error) {
+            LoginView(appState: appState)
         } else if let error = appState.error {
             errorView(error: error)
         } else {
             emptyStateView
         }
+    }
+
+    private func isNoCredentialsError(_ error: Error?) -> Bool {
+        guard let appError = error as? AppError else { return false }
+        if case .noCredentials = appError { return true }
+        return false
     }
 
     // MARK: - Header

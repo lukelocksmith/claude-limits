@@ -122,6 +122,9 @@ enum Constants {
     enum OAuth {
         static let tokenEndpoint = "https://platform.claude.com/v1/oauth/token"
         static let clientId = "9d1c250a-e61b-44d9-88ed-5944d1962f5e"
+        static let authorizeURL = "https://claude.ai/oauth/authorize"
+        static let redirectURI = "https://platform.claude.com/oauth/code/callback"
+        static let scopes = "user:profile user:inference"
     }
 
     // MARK: - UI Dimensions

@@ -73,6 +73,17 @@ struct GeneralSettingsView: View {
                         .accessibilityLabel("Show Extra Usage")
                         .accessibilityHint("When enabled, shows extra usage billing information")
                 }
+
+                Section(header: Text("Account")) {
+                    Button(role: .destructive) {
+                        appState.logout()
+                    } label: {
+                        Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
+                    }
+                    .help("Sign out and remove stored credentials.")
+                    .accessibilityLabel("Sign Out")
+                    .accessibilityHint("Signs out and returns to the login screen")
+                }
             }
             .formStyle(.grouped)
             .scrollIndicators(.hidden)
