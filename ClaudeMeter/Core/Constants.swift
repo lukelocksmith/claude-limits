@@ -120,7 +120,7 @@ enum Constants {
 
     // MARK: - OAuth Configuration
     enum OAuth {
-        static let tokenEndpoint = "https://console.anthropic.com/api/oauth/token"
+        static let tokenEndpoint = "https://platform.claude.com/v1/oauth/token"
         static let clientId = "9d1c250a-e61b-44d9-88ed-5944d1962f5e"
     }
 
