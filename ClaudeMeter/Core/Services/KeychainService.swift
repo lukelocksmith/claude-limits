@@ -171,50 +171,97 @@ class KeychainService: KeychainServiceProtocol {
         return outputData
     }
 
+    // MARK: - File-based Credential Reading
+
+    /// Read credentials directly from ~/.claude/.credentials.json file
+    /// This is more reliable than shell-based Keychain access from GUI apps
+    private func readCredentialsFromFile() throws -> Data {
+        let homeDir = FileManager.default.homeDirectoryForCurrentUser
+        let credentialsPath = homeDir.appendingPathComponent(".claude/.credentials.json")
+
+        guard FileManager.default.fileExists(atPath: credentialsPath.path) else {
+            throw KeychainError.itemNotFound
+        }
+
+        let data = try Data(contentsOf: credentialsPath)
+        guard !data.isEmpty else {
+            throw KeychainError.itemNotFound
+        }
+
+        return data
+    }
+
     // MARK: - Claude Code Credential Helper
+
+    /// Parse raw JSON data into ClaudeCredentials
+    private func parseCredentials(from data: Data) -> ClaudeCredentials? {
+        // First try to decode as ClaudeKeychainData (wrapped format)
+        if let keychainData = try? JSONDecoder().decode(ClaudeKeychainData.self, from: data) {
+            let oauth = keychainData.claudeAiOauth
+            return ClaudeCredentials(
+                accessToken: oauth.accessToken,
+                refreshToken: oauth.refreshToken,
+                expiresAt: Date(timeIntervalSince1970: oauth.expiresAt / 1000), // ms to seconds
+                subscriptionType: oauth.subscriptionType ?? Constants.Credentials.defaultSubscriptionType
+            )
+        }
+
+        // Fallback: try to decode as direct ClaudeOAuthData
+        if let oauthData = try? JSONDecoder().decode(ClaudeOAuthData.self, from: data) {
+            return ClaudeCredentials(
+                accessToken: oauthData.accessToken,
+                refreshToken: oauthData.refreshToken,
+                expiresAt: Date(timeIntervalSince1970: oauthData.expiresAt / 1000), // ms to seconds
+                subscriptionType: oauthData.subscriptionType ?? Constants.Credentials.defaultSubscriptionType
+            )
+        }
+
+        // Final fallback: try direct ClaudeCredentials decode
+        if let credentials = try? JSONDecoder().decode(ClaudeCredentials.self, from: data) {
+            return credentials
+        }
+
+        return nil
+    }
 
     /// Tries to find credentials stored by Claude Code CLI
     /// Claude Code stores credentials in JSON format with claudeAiOauth wrapper
+    /// Reads from ~/.claude/.credentials.json first, falls back to Keychain shell access
     func getCredentials() throws -> ClaudeCredentials? {
+        // Primary: read directly from credentials file (most reliable from GUI apps)
         do {
-            // Use shell command to avoid Keychain password prompt
-            let data = try readCredentialsViaShell()
-
-            // First try to decode as ClaudeKeychainData (wrapped format)
-            if let keychainData = try? JSONDecoder().decode(ClaudeKeychainData.self, from: data) {
-                let oauth = keychainData.claudeAiOauth
-                return ClaudeCredentials(
-                    accessToken: oauth.accessToken,
-                    refreshToken: oauth.refreshToken,
-                    expiresAt: Date(timeIntervalSince1970: oauth.expiresAt / 1000), // ms to seconds
-                    subscriptionType: oauth.subscriptionType ?? Constants.Credentials.defaultSubscriptionType
-                )
+            let data = try readCredentialsFromFile()
+            if let credentials = parseCredentials(from: data) {
+                return credentials
             }
-
-            // Fallback: try to decode as direct ClaudeOAuthData
-            if let oauthData = try? JSONDecoder().decode(ClaudeOAuthData.self, from: data) {
-                return ClaudeCredentials(
-                    accessToken: oauthData.accessToken,
-                    refreshToken: oauthData.refreshToken,
-                    expiresAt: Date(timeIntervalSince1970: oauthData.expiresAt / 1000), // ms to seconds
-                    subscriptionType: oauthData.subscriptionType ?? Constants.Credentials.defaultSubscriptionType
-                )
-            }
-
-            // Final fallback: try direct ClaudeCredentials decode
-            let credentials = try JSONDecoder().decode(ClaudeCredentials.self, from: data)
-            return credentials
-
-        } catch KeychainError.itemNotFound {
-            return nil
+            print("KeychainService: File credentials found but failed to parse")
         } catch {
-            print("KeychainService: Error reading credentials - \(error)")
-            return nil
+            print("KeychainService: File read failed - \(error)")
         }
+
+        // Fallback: use shell command to read from Keychain
+        do {
+            let data = try readCredentialsViaShell()
+            if let credentials = parseCredentials(from: data) {
+                return credentials
+            }
+            print("KeychainService: Keychain credentials found but failed to parse")
+        } catch KeychainError.itemNotFound {
+            // No credentials in Keychain either
+        } catch {
+            print("KeychainService: Error reading credentials via shell - \(error)")
+        }
+
+        return nil
     }
 
-    /// Check if Claude Code credentials exist in Keychain
+    /// Check if Claude Code credentials exist
     func hasCredentials() -> Bool {
+        // Check file first
+        if let _ = try? readCredentialsFromFile() {
+            return true
+        }
+        // Fallback to Keychain
         do {
             _ = try readCredentialsViaShell()
             return true

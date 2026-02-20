@@ -28,7 +28,7 @@ enum ColorTheme {
     // MARK: - UI Colors
 
     /// Primary accent color
-    static let accent = Color(red: 175/255, green: 82/255, blue: 222/255)  // #AF52DE - Purple (Claude brand)
+    static let accent = Color(red: 48/255, green: 209/255, blue: 189/255)  // #30D1BD - Teal
 
     /// Background color for cards (deprecated - use .regularMaterial instead)
     @available(*, deprecated, message: "Use .regularMaterial for glass effect")

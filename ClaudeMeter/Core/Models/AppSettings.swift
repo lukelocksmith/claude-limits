@@ -38,6 +38,8 @@ struct AppSettings: Codable, Equatable {
     var colorScheme: AppColorScheme = .auto
     var showInDock: Bool = false
     var showOpusLimit: Bool = true
+    var showSonnetLimit: Bool = true
+    var showExtraUsage: Bool = true
 
     // Polling
     var refreshInterval: Int = Constants.Settings.defaultRefreshInterval

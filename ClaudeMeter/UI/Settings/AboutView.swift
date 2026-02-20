@@ -25,7 +25,7 @@ struct AboutView: View {
                         .frame(width: Constants.UI.aboutLogoSize, height: Constants.UI.aboutLogoSize)
 
                     // App Name
-                    Text("ClaudeMeter")
+                    Text("Claude Limits")
                         .font(.title)
                         .fontWeight(.bold)
 
@@ -50,7 +50,7 @@ struct AboutView: View {
                         .frame(height: 8)
 
                     // Copyright
-                    Text("© 2026 puq.ai. All rights reserved.")
+                    Text("© 2026 Claude Limits. All rights reserved.")
                         .font(.caption)
                         .foregroundStyle(.secondary.opacity(0.7))
                 }

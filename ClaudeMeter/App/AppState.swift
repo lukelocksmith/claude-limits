@@ -152,7 +152,9 @@ class AppState: ObservableObject {
         let maxUsage = [
             data.fiveHour?.utilization ?? 0,
             data.sevenDay?.utilization ?? 0,
-            data.sevenDayOpus?.utilization ?? 0
+            data.sevenDayOpus?.utilization ?? 0,
+            data.sevenDaySonnet?.utilization ?? 0,
+            data.extraUsage?.utilization ?? 0
         ].max() ?? 0
 
         pollingManager.updateForUsage(maxUsage)

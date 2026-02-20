@@ -21,7 +21,7 @@ enum Constants {
         static let resourceTimeout: TimeInterval = 60
 
         // Headers
-        static let userAgent = "ClaudeMeter/1.0"
+        static let userAgent = "ClaudeLimits/1.0"
         static let anthropicBeta = "oauth-2025-04-20"
         static let contentType = "application/json"
         static let acceptType = "application/json"

@@ -1,6 +1,6 @@
 //
 //  GeneralSettingsView.swift
-//  ClaudeMeter
+//  Claude Limits
 //
 //  Copyright (c) 2026 puq.ai. All rights reserved.
 //  Licensed under the MIT License. See LICENSE file.
@@ -25,9 +25,9 @@ struct GeneralSettingsView: View {
                             toggleLaunchAtLogin(newValue)
                         }
                     ))
-                    .help("Automatically start ClaudeMeter when you log in.")
+                    .help("Automatically start Claude Limits when you log in.")
                     .accessibilityLabel("Launch at Login")
-                    .accessibilityHint("When enabled, ClaudeMeter will start automatically when you log in")
+                    .accessibilityHint("When enabled, Claude Limits will start automatically when you log in")
 
                     if let error = launchAtLoginError {
                         Text(error)
@@ -43,9 +43,9 @@ struct GeneralSettingsView: View {
                             updateDockVisibility(newValue)
                         }
                     ))
-                    .help("Show ClaudeMeter icon in the Dock.")
+                    .help("Show Claude Limits icon in the Dock.")
                     .accessibilityLabel("Show in Dock")
-                    .accessibilityHint("When enabled, ClaudeMeter will appear in the Dock")
+                    .accessibilityHint("When enabled, Claude Limits will appear in the Dock")
 
                     Picker("Refresh Interval", selection: $appState.settings.refreshInterval) {
                         Text("30 Seconds").tag(30)
@@ -58,10 +58,20 @@ struct GeneralSettingsView: View {
                 }
 
                 Section(header: Text("Display")) {
+                    Toggle("Show Sonnet Limit", isOn: $appState.settings.showSonnetLimit)
+                        .help("Display Sonnet model weekly usage limit.")
+                        .accessibilityLabel("Show Sonnet Limit")
+                        .accessibilityHint("When enabled, shows the Sonnet model usage limit")
+
                     Toggle("Show Opus Limit", isOn: $appState.settings.showOpusLimit)
                         .help("Display Opus model usage limit in the usage view.")
                         .accessibilityLabel("Show Opus Limit")
                         .accessibilityHint("When enabled, shows the Opus model usage limit")
+
+                    Toggle("Show Extra Usage", isOn: $appState.settings.showExtraUsage)
+                        .help("Display extra usage spending and monthly limit.")
+                        .accessibilityLabel("Show Extra Usage")
+                        .accessibilityHint("When enabled, shows extra usage billing information")
                 }
             }
             .formStyle(.grouped)
