@@ -32,4 +32,8 @@ protocol KeychainServiceProtocol {
     /// Check if Claude Code credentials exist in Keychain
     /// - Returns: True if credentials exist
     func hasCredentials() -> Bool
+
+    /// Update stored credentials with refreshed token data
+    /// - Parameter credentials: The new credentials to save
+    func updateCredentials(_ credentials: ClaudeCredentials) throws
 }

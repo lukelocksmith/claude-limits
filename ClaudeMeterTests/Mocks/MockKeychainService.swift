@@ -68,6 +68,17 @@ class MockKeychainService: KeychainServiceProtocol {
         return stubbedHasCredentials
     }
 
+    var updateCredentialsCallCount = 0
+    var lastUpdatedCredentials: ClaudeCredentials?
+
+    func updateCredentials(_ credentials: ClaudeCredentials) throws {
+        updateCredentialsCallCount += 1
+        lastUpdatedCredentials = credentials
+        if shouldThrowOnSave {
+            throw KeychainError.unexpectedStatus(-1)
+        }
+    }
+
     // MARK: - Reset
 
     func reset() {
@@ -81,5 +92,7 @@ class MockKeychainService: KeychainServiceProtocol {
         stubbedHasCredentials = false
         shouldThrowOnSave = false
         shouldThrowOnRead = false
+        updateCredentialsCallCount = 0
+        lastUpdatedCredentials = nil
     }
 }

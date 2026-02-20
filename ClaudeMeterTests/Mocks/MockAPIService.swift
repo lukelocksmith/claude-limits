@@ -60,15 +60,33 @@ class MockAPIService: APIServiceProtocol {
         return stubbedTokenValid
     }
 
+    var refreshTokenCallCount = 0
+    var stubbedTokenResponse: OAuthTokenResponse?
+    var stubbedRefreshError: Error?
+
+    func refreshOAuthToken(refreshToken: String) async throws -> OAuthTokenResponse {
+        refreshTokenCallCount += 1
+        if let error = stubbedRefreshError {
+            throw error
+        }
+        guard let response = stubbedTokenResponse else {
+            throw APIError.unauthorized(message: "Token refresh failed")
+        }
+        return response
+    }
+
     // MARK: - Reset
 
     func reset() {
         fetchUsageCallCount = 0
         fetchUsageWithRetryCallCount = 0
         validateTokenCallCount = 0
+        refreshTokenCallCount = 0
         lastToken = nil
         stubbedUsageData = nil
         stubbedError = nil
         stubbedTokenValid = true
+        stubbedTokenResponse = nil
+        stubbedRefreshError = nil
     }
 }

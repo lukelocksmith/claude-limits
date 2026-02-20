@@ -118,6 +118,12 @@ enum Constants {
         static let defaultSubscriptionType = "pro"
     }
 
+    // MARK: - OAuth Configuration
+    enum OAuth {
+        static let tokenEndpoint = "https://console.anthropic.com/api/oauth/token"
+        static let clientId = "9d1c250a-e61b-44d9-88ed-5944d1962f5e"
+    }
+
     // MARK: - UI Dimensions
     enum UI {
         static let menuBarIconSize: CGFloat = 18

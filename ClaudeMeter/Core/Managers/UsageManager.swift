@@ -58,30 +58,39 @@ class UsageManager: ObservableObject {
 
         do {
             // 1. Get Token
-            guard let credentials = try keychainService.getCredentials() else {
+            guard var credentials = try keychainService.getCredentials() else {
                 throw AppError.noCredentials
             }
 
-            // Check if credentials are valid
-            guard credentials.isValid else {
-                throw AppError.credentialsExpired
+            // 2. Refresh token if expired or expiring soon
+            if !credentials.isValid || credentials.isExpiringSoon {
+                print("UsageManager: Token expired or expiring soon, attempting refresh")
+                credentials = try await refreshCredentials(credentials)
             }
 
-            // 2. Fetch Data with retry
-            let data = try await apiService.fetchUsageWithRetry(token: credentials.accessToken)
-
-            // 3. Update State
-            self.usageData = data
-            self.error = nil
-
-            // 4. Cache the data
-            cacheManager.cacheUsageData(data)
+            // 3. Fetch Data with retry
+            do {
+                let data = try await apiService.fetchUsageWithRetry(token: credentials.accessToken)
+                self.usageData = data
+                self.error = nil
+                cacheManager.cacheUsageData(data)
+            } catch let apiError as APIError {
+                // 4. On 401, try refreshing token and retrying once
+                if case .unauthorized = apiError {
+                    print("UsageManager: Got 401, attempting token refresh and retry")
+                    let refreshed = try await refreshCredentials(credentials)
+                    let data = try await apiService.fetchUsageWithRetry(token: refreshed.accessToken)
+                    self.usageData = data
+                    self.error = nil
+                    cacheManager.cacheUsageData(data)
+                } else {
+                    throw apiError
+                }
+            }
 
         } catch let error as APIError {
             self.error = AppError.from(error)
             print("UsageManager: API error - \(error)")
-
-            // Try to use cached data on error
             loadCachedData()
 
         } catch let error as KeychainError {
@@ -91,8 +100,6 @@ class UsageManager: ObservableObject {
         } catch let error as AppError {
             self.error = error
             print("UsageManager: App error - \(error)")
-
-            // Try to use cached data on error
             if error.shouldRetry {
                 loadCachedData()
             }
@@ -103,6 +110,24 @@ class UsageManager: ObservableObject {
         }
 
         isLoading = false
+    }
+
+    /// Refresh OAuth credentials and save the new token
+    private func refreshCredentials(_ credentials: ClaudeCredentials) async throws -> ClaudeCredentials {
+        let tokenResponse = try await apiService.refreshOAuthToken(refreshToken: credentials.refreshToken)
+
+        let newCredentials = ClaudeCredentials(
+            accessToken: tokenResponse.accessToken,
+            refreshToken: tokenResponse.refreshToken ?? credentials.refreshToken,
+            expiresAt: Date().addingTimeInterval(TimeInterval(tokenResponse.expiresIn)),
+            subscriptionType: credentials.subscriptionType
+        )
+
+        // Save refreshed credentials back to file
+        try keychainService.updateCredentials(newCredentials)
+        print("UsageManager: Token refreshed successfully, expires in \(tokenResponse.expiresIn)s")
+
+        return newCredentials
     }
 
     // MARK: - Cache

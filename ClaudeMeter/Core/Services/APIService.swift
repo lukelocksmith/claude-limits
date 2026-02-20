@@ -228,7 +228,25 @@ class APIService: APIServiceProtocol {
     }
 }
 
-// MARK: - Async Extension for easier use
+// MARK: - OAuth Token Refresh
+
+/// Response from the OAuth token refresh endpoint
+struct OAuthTokenResponse: Codable {
+    let accessToken: String
+    let refreshToken: String?
+    let expiresIn: Int  // seconds
+    let tokenType: String?
+    let scope: String?
+
+    enum CodingKeys: String, CodingKey {
+        case accessToken = "access_token"
+        case refreshToken = "refresh_token"
+        case expiresIn = "expires_in"
+        case tokenType = "token_type"
+        case scope
+    }
+}
+
 extension APIService {
     /// Convenience method that automatically uses retry
     func getUsage(token: String, withRetry: Bool = true) async throws -> UsageData {
@@ -237,5 +255,38 @@ extension APIService {
         } else {
             return try await fetchUsage(token: token)
         }
+    }
+
+    /// Refresh an OAuth access token using the refresh token
+    /// - Parameter refreshToken: The refresh token to use
+    /// - Returns: New token response with fresh access token
+    func refreshOAuthToken(refreshToken: String) async throws -> OAuthTokenResponse {
+        guard let url = URL(string: Constants.OAuth.tokenEndpoint) else {
+            throw APIError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: String] = [
+            "grant_type": "refresh_token",
+            "refresh_token": refreshToken,
+            "client_id": Constants.OAuth.clientId
+        ]
+        request.httpBody = try JSONEncoder().encode(body)
+
+        let (data, response) = try await session.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.noData
+        }
+
+        guard httpResponse.statusCode == 200 else {
+            let message = parseErrorMessage(from: data)
+            throw APIError.unauthorized(message: message ?? "Token refresh failed (HTTP \(httpResponse.statusCode))")
+        }
+
+        return try JSONDecoder().decode(OAuthTokenResponse.self, from: data)
     }
 }

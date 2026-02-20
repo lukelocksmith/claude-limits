@@ -255,6 +255,31 @@ class KeychainService: KeychainServiceProtocol {
         return nil
     }
 
+    /// Update credentials file with refreshed token data
+    func updateCredentials(_ credentials: ClaudeCredentials) throws {
+        let homeDir = FileManager.default.homeDirectoryForCurrentUser
+        let credentialsPath = homeDir.appendingPathComponent(".claude/.credentials.json")
+
+        // Read existing file to preserve other fields (mcpOAuth, etc.)
+        var existingJSON: [String: Any] = [:]
+        if let data = try? Data(contentsOf: credentialsPath),
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            existingJSON = json
+        }
+
+        // Update the claudeAiOauth section
+        existingJSON["claudeAiOauth"] = [
+            "accessToken": credentials.accessToken,
+            "refreshToken": credentials.refreshToken,
+            "expiresAt": credentials.expiresAt.timeIntervalSince1970 * 1000, // seconds to ms
+            "subscriptionType": credentials.subscriptionType
+        ]
+
+        let jsonData = try JSONSerialization.data(withJSONObject: existingJSON, options: [.prettyPrinted, .sortedKeys])
+        try jsonData.write(to: credentialsPath, options: .atomic)
+        print("KeychainService: Updated credentials file with refreshed token")
+    }
+
     /// Check if Claude Code credentials exist
     func hasCredentials() -> Bool {
         // Check file first

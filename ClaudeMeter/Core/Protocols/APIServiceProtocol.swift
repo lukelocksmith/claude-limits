@@ -24,4 +24,9 @@ protocol APIServiceProtocol {
     /// - Parameter token: The authentication token to validate
     /// - Returns: True if the token is valid
     func validateToken(_ token: String) async -> Bool
+
+    /// Refresh an OAuth access token using the refresh token
+    /// - Parameter refreshToken: The refresh token to use
+    /// - Returns: New token response with fresh access token
+    func refreshOAuthToken(refreshToken: String) async throws -> OAuthTokenResponse
 }
